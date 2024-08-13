@@ -37,7 +37,9 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: glowpub-${{ matrix.os }}
-        path: target/release/glowpub
+        path: |
+          target/release/glowpub
+          target/release/glowpub.exe # Include for Windows
 
     - name: Download artifacts
       uses: actions/download-artifact@v3
@@ -68,8 +70,8 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          artifacts/glowpub-linux/glowpub
-          artifacts/glowpub-windows/glowpub.exe
-          artifacts/glowpub-macos/glowpub
+          artifacts/glowpub-ubuntu-latest/glowpub
+          artifacts/glowpub-windows-latest/glowpub.exe
+          artifacts/glowpub-macos-latest/glowpub
         tag_name: v${{ github.run_number }}
         name: Release v${{ github.run_number }}
