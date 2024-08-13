@@ -45,7 +45,7 @@ jobs:
         path: artifacts
 
     - name: Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v1
       with:
         files: |
           artifacts/glowpub-linux/glowpub
