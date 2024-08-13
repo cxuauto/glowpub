@@ -44,12 +44,32 @@ jobs:
       with:
         path: artifacts
 
+    - name: Create Release Tag
+      id: create_tag
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.git.createTag({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag: 'v${{ github.run_number }}',
+            message: 'Release v${{ github.run_number }}',
+            object: context.sha,
+            type: 'commit'
+          })
+
+    - name: Push Release Tag
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        tags: true
+
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           artifacts/glowpub-linux/glowpub
           artifacts/glowpub-windows/glowpub.exe
           artifacts/glowpub-macos/glowpub
-        tag_name: ${{ github.ref }}
-        name: Release ${{ github.ref }}
+        tag_name: v${{ github.run_number }}
+        name: Release v${{ github.run_number }}
