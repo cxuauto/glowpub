@@ -1,0 +1,61 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.77.1
+        override: true
+        components: rust-src
+
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release
+
+    - name: Strip binaries (Linux and macOS)
+      if: matrix.os != 'windows-latest'
+      run: strip target/release/glowpub
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: glowpub-${{ matrix.os }}
+        path: target/release/glowpub
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          artifacts/glowpub-linux/glowpub
+          artifacts/glowpub-windows/glowpub.exe
+          artifacts/glowpub-macos/glowpub
+        tag_name: ${{ github.ref }}
+        name: Release ${{ github.ref }}
